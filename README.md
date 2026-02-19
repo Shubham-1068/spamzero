@@ -16,6 +16,28 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## MongoDB setup
+
+Create a `.env.local` file in the project root:
+
+```bash
+MONGODB_URI=mongodb://127.0.0.1:27017
+MONGODB_DB=spamzero
+HUGGINGFACE_PREDICT_URL=https://your-huggingface-inference-uri
+```
+
+### History API
+
+- `POST /api/history` stores a JSON record in the `history` collection.
+- `GET /api/history` fetches all records from the `history` collection (latest first).
+
+### Predict API
+
+- `POST /api/predict` proxies requests to your Hugging Face model URL in `HUGGINGFACE_PREDICT_URL`.
+- You can send either:
+	- `{ "inputs": "your text" }` (direct Hugging Face format), or
+	- `{ "text": "your text" }` (auto-converted to `inputs`).
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
