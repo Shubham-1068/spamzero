@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
 type PredictionResult = {
@@ -27,7 +28,6 @@ export default function Page() {
   const [historyLoading, setHistoryLoading] = useState(true);
   const [historyBusy, setHistoryBusy] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [activeSection, setActiveSection] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState<"dashboard" | "overview" | "history">("dashboard");
   const [hoveredSlice, setHoveredSlice] = useState<"ham" | "spam" | null>(null);
@@ -128,11 +128,6 @@ export default function Page() {
     };
   }, [result]);
 
-  const scrollToSection = (sectionId: string) => {
-    setActiveSection(sectionId);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
   const handlePredict = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
@@ -206,7 +201,7 @@ export default function Page() {
           <div className="border-b border-teal-400/30 p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <img src="/logo.jpeg" alt="SpamZero Logo" className="h-8 w-8 rounded-full object-cover" />
+                <Image src="/logo.jpeg" alt="SpamZero Logo" className="h-8 w-8 rounded-full object-cover" width={32} height={32} />
                 <div>
                   <h2 className="text-sm font-bold text-gray-800">SpamZero</h2>
                   <p className="text-xs text-teal-600">AI Detection</p>
@@ -311,7 +306,7 @@ export default function Page() {
             </button>
             
             <div className="flex items-center gap-3">
-              <img src="/logo.jpeg" alt="SpamZero Logo" className="h-8 w-8 rounded-full object-cover" />
+              <Image src="/logo.jpeg" alt="SpamZero Logo" className="h-8 w-8 rounded-full object-cover" width={32} height={32} />
               <div>
                 <h1 className="text-lg font-bold text-gray-800">SpamZero</h1>
               </div>
@@ -328,7 +323,7 @@ export default function Page() {
               <div className="mb-6">
                 <h2 className="text-2xl font-bold text-gray-800">Check Message</h2>
                 <p className="mt-1 text-sm text-teal-600">
-                  Enter a message to detect if it's spam or not
+                  Enter a message to detect if it&apos;s spam or not
                 </p>
               </div>
 
@@ -396,9 +391,9 @@ export default function Page() {
                     </div>
 
                     <details className="group rounded-xl border-2 border-teal-400/40 bg-white">
-                      <summary className="cursor-pointer px-4 py-3 text-xs font-semibold uppercase tracking-wide text-teal-600 transition hover:text-teal-700">
-                        View Raw Response
-                 id="history"      </summary>
+                <summary className="cursor-pointer px-4 py-3 text-xs font-semibold uppercase tracking-wide text-teal-600 transition hover:text-teal-700">
+                  View Raw Response
+                </summary>
                       <pre className="overflow-x-auto border-t-2 border-teal-400/40 p-4 text-xs text-gray-700">
                         {JSON.stringify(result, null, 2)}
                       </pre>

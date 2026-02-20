@@ -1,58 +1,232 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SpamZero 🛡️
+
+**SpamZero** is a full-stack AI-powered spam detection system that classifies emails and SMS messages as **Spam** or **Ham (Not Spam)** in real time. The frontend and backend are built with Next.js, while the machine learning model is deployed as a separate FastAPI microservice on Hugging Face Spaces, with prediction history stored in MongoDB Atlas.
+
+🌐 **Live Demo:** [spamzero.vercel.app](https://spamzero.vercel.app)
+
+---
+
+## System Architecture
+
+```
+User → Next.js Frontend UI
+          ↓
+     Next.js API Route
+          ↓
+  FastAPI ML Microservice (Hugging Face Spaces)
+  [Preprocessing → TF-IDF → Prediction]
+          ↓
+     Result returned to Next.js
+          ↓
+     MongoDB Atlas (prediction log stored)
+```
+
+---
+
+## Features
+
+- 📨 **Email/SMS Spam Classification** — Detects spam using a trained Scikit-learn model
+- ⚡ **Real-Time Predictions** — FastAPI microservice handles inference with low latency
+- 📋 **Prediction History** — Every prediction (text, result, confidence, timestamp) is logged to MongoDB Atlas
+- 🧠 **TF-IDF + Classical ML** — Preprocessing pipeline with Naive Bayes / Logistic Regression / SVM
+- 🌐 **Fully Deployed** — Next.js on Vercel, ML service on Hugging Face Spaces, DB on MongoDB Atlas
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend & Backend | Next.js (App Router + API Routes) |
+| Language | TypeScript (Next.js), Python (ML) |
+| Machine Learning | Scikit-learn, NLTK |
+| ML API | FastAPI |
+| Database | MongoDB Atlas |
+| Deployment (App) | Vercel |
+| Deployment (ML) | Hugging Face Spaces |
+| Version Control | GitHub |
+
+---
+
+## Machine Learning Workflow
+
+1. **Text Preprocessing** — Lowercasing, punctuation removal, stopword removal (NLTK)
+2. **Feature Extraction** — TF-IDF Vectorization
+3. **Model Training** — Naive Bayes, Logistic Regression, SVM evaluated and compared
+4. **Evaluation** — Precision, Recall, F1 Score
+5. **Model Export** — Best model saved as `.pkl` files
+6. **Deployment** — Served via FastAPI on Hugging Face Spaces for real-time inference
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- Python 3.9+ (for ML service)
+- MongoDB Atlas account
+- Hugging Face account (for ML deployment)
+
+### Installation
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/Shubham-1068/spamzero.git
+cd spamzero
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-## MongoDB setup
+### Environment Setup
 
 Create a `.env.local` file in the project root:
 
-```bash
-MONGODB_URI=mongodb://127.0.0.1:27017
+```env
+MONGODB_URI=mongodb+srv://<user>:<password>@cluster.mongodb.net
 MONGODB_DB=spamzero
-HUGGINGFACE_PREDICT_URL=https://your-huggingface-inference-uri
+HUGGINGFACE_PREDICT_URL=https://your-huggingface-space-url/predict
 ```
 
-### History API
+### Running the Development Server
 
-- `POST /api/history` stores a JSON record in the `history` collection.
-- `GET /api/history` fetches all records from the `history` collection (latest first).
+```bash
+npm run dev
+```
 
-### Predict API
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-- `POST /api/predict` proxies requests to your Hugging Face model URL in `HUGGINGFACE_PREDICT_URL`.
-- You can send either:
-	- `{ "inputs": "your text" }` (direct Hugging Face format), or
-	- `{ "text": "your text" }` (auto-converted to `inputs`).
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## API Reference
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### `POST /api/predict`
 
-## Learn More
+Proxies the user's input to the FastAPI ML microservice on Hugging Face and returns the prediction.
 
-To learn more about Next.js, take a look at the following resources:
+**Request body:**
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```json
+{ "text": "Congratulations! You've won a free iPhone. Click here to claim." }
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Response:**
 
-## Deploy on Vercel
+```json
+{
+  "result": "spam",
+  "confidence": 0.97
+}
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### `POST /api/history`
+
+Saves a prediction record to MongoDB Atlas.
+
+**Request body:**
+
+```json
+{
+  "text": "Congratulations! You've won a free iPhone.",
+  "result": "spam",
+  "confidence": 0.97
+}
+```
+
+---
+
+### `GET /api/history`
+
+Returns all stored prediction records, sorted from newest to oldest.
+
+**Response:**
+
+```json
+[
+  {
+    "_id": "...",
+    "text": "Congratulations! You've won a free iPhone.",
+    "result": "spam",
+    "confidence": 0.97,
+    "timestamp": "2025-01-01T00:00:00.000Z"
+  }
+]
+```
+
+---
+
+## MongoDB Schema
+
+Each prediction document stored in the `history` collection follows this structure:
+
+| Field | Type | Description |
+|---|---|---|
+| `text` | String | The input message |
+| `result` | String | `"spam"` or `"ham"` |
+| `confidence` | Number | Model confidence score (0–1) |
+| `timestamp` | Date | Time of prediction |
+| `feedback` | String | *(Optional)* User feedback for retraining |
+
+---
+
+## Project Structure
+
+```
+spamzero/
+├── app/
+│   ├── page.tsx          # Main UI
+│   └── api/
+│       ├── predict/      # Proxies to FastAPI ML service
+│       └── history/      # MongoDB read/write
+├── lib/                  # MongoDB client utility
+├── public/               # Static assets
+├── .env.local            # Environment variables (not committed)
+├── next.config.ts
+└── package.json
+```
+
+---
+
+## Team Roles
+
+| Role | Responsibilities |
+|---|---|
+| **Data Engineer** | Data cleaning, feature engineering, TF-IDF, dataset validation |
+| **ML Scientist** | Model selection, evaluation (Precision/Recall/F1), `.pkl` export, FastAPI deployment |
+| **Full-Stack Developer** | Frontend UI, Next.js API routes, FastAPI integration, MongoDB logging |
+| **Database Engineer** | MongoDB schema design, Atlas cluster management, query optimization |
+| **DevOps Engineer** | Environment variables, Vercel + Hugging Face deployment, CI/CD pipelines |
+
+---
+
+## Deliverables
+
+- [x] Structured GitHub Repository
+- [x] Deployed Next.js Application ([spamzero.vercel.app](https://spamzero.vercel.app))
+- [ ] Deployed FastAPI ML Service (Hugging Face Spaces)
+- [ ] MongoDB Atlas Integration
+- [ ] Model Performance Report
+- [ ] Final Presentation (PPT)
+
+---
+
+## Deployment
+
+### Next.js → Vercel
+
+1. Push code to GitHub
+2. Import repository on [Vercel](https://vercel.com/new)
+3. Add environment variables in Vercel project settings
+4. Deploy
+
+### FastAPI ML Service → Hugging Face Spaces
+
+1. Create a new Space on Hugging Face (SDK: Docker or Gradio)
+2. Upload your `app.py`, `model.pkl`, `vectorizer.pkl`, and `requirements.txt`
+3. Copy the Space's public URL and set it as `HUGGINGFACE_PREDICT_URL` in your `.env.local`
+
+---
+
+## License
+
+This project is open source. See the repository for details.

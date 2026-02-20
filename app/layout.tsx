@@ -16,7 +16,8 @@ export const metadata: Metadata = {
   title: "SpamZero - AI Spam Detection",
   description: "Detect spam messages using AI-powered analysis",
   icons: {
-    icon: "/logo.jpeg",
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
   },
 };
 

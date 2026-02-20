@@ -6,7 +6,7 @@ export async function POST(req) {
 
     if (!huggingFaceUri) {
       return Response.json(
-        { error: "Missing HUGGINGFACE_PREDICT_URL in environment" },
+        { error: "Missing HUGGING_FACE_URI in environment" },
         { status: 500 }
       );
     }
